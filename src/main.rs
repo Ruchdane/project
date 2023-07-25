@@ -1,14 +1,17 @@
 #[macro_use]
 extern crate log;
 
+use std::fs;
 use std::path::PathBuf;
-use std::{fs, process::Command};
+mod command_parser;
 mod config;
 mod menu;
 mod prelude;
 use clap::Parser;
 use cli::Opts;
 use project::ProjectConfig;
+
+use crate::command_parser::{command_from_array, parse_command};
 
 mod cli;
 mod project;
@@ -22,70 +25,58 @@ fn main() {
     debug!("Using config {:?}", conf);
 
     // Path to your project configuration files
-    let mut projects_dir = opts
+    let projects_dir = opts
         .projects_dir
         .map(PathBuf::from)
         .unwrap_or_else(|| conf.projects_configs_path);
     debug!("Projects Locatin: {}", projects_dir.display());
 
     // Get list of project configuration files
-    let projects_configs = match fs::read_dir(&projects_dir) {
-        Ok(entries) => entries
-            .filter_map(|entry| {
-                let path = entry.unwrap().path();
-                if path.extension().unwrap_or_default() == "yml" {
-                    Some(path)
-                } else {
+    let projects_configs: Vec<ProjectConfig> = match fs::read_dir(&projects_dir) {
+        Ok(entries) => ProjectConfig::get_projects_path(entries)
+            .into_iter()
+            .filter_map(|path| match ProjectConfig::from_file(&path) {
+                Ok(value) => Some(value),
+                Err(err) => {
+                    error!(
+                        "Failed to load project config at {}\n\t Because {:?}",
+                        path.to_string_lossy(),
+                        err
+                    );
                     None
                 }
             })
-            .collect::<Vec<_>>(),
+            .collect(),
         Err(err) => {
             error!("Failed to read project configuration files: {}", err);
             return;
         }
     };
+    debug!("{} Projects Found", projects_configs.len());
 
-    debug!("{} Project loaded successuflly", projects_configs.len());
-    // Prepare project configurations
-    let config_files: &[PathBuf] = &projects_configs;
-    let mut project_configs = Vec::new();
-
-    for config_file in config_files {
-        match ProjectConfig::from_file(config_file) {
-            Ok(project_config) => project_configs.push((
-                config_file.file_name().unwrap().to_string_lossy(),
-                project_config,
-            )),
-            Err(e) => error!(
-                "Could not load config for {} \n\tBecause: {:?}",
-                config_file.display(),
-                e
-            ),
-        };
-    }
-
-    // Prepare menu items
-    let menu_items: Vec<String> = project_configs
-        .iter()
-        .map(|config| format!("{}:{} ", config.0, config.1.display()))
-        .collect();
-
-    let binding = menu::menu(menu_items, opts.rofi_theme.as_deref());
-    if binding.is_empty() {
-        debug!("No project selected");
-        return;
-    }
-    let selected = binding.split_once(':').unwrap().0;
-
-    debug!("Selected {}", selected);
-    projects_dir.push(selected);
-    // Launch the selected configuration file with tmuxp
-    if !selected.is_empty() {
-        Command::new("tmuxp")
-            .arg("load")
-            .arg(projects_dir)
-            .status()
-            .expect("Failed to launch tmuxp");
+    let menu_result = match menu::menu(command_from_array(conf.menu_command), &projects_configs) {
+        Ok(v) => v,
+        Err(err) => {
+            error!("{:?}", err);
+            None
+        }
+    };
+    if let Some(project) = menu_result {
+        let project = projects_configs
+            .get(project)
+            .expect("Project index out of bound");
+        debug!("Selected {}", project);
+        parse_command(
+            project
+                .get_command()
+                .clone()
+                .unwrap_or(conf.default_project_command),
+            project.get_env(),
+        )
+        .current_dir(project.get_workdir())
+        .status()
+        .expect("Failed to launch project command");
+    } else {
+        debug!("No project selected!");
     }
 }

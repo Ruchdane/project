@@ -8,10 +8,6 @@ pub struct Opts {
     #[arg(short, long, value_name = "DIR")]
     pub projects_dir: Option<String>,
 
-    /// Sets the Rofi theme file
-    #[arg(short, long, value_name = "FILE")]
-    pub rofi_theme: Option<String>,
-
     /// Sets verbosity level
     #[command(flatten)]
     pub verbose: Verbosity,

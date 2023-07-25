@@ -6,7 +6,8 @@ use serde::{Deserialize, Serialize};
 pub struct Config {
     version: String,
     pub projects_configs_path: PathBuf,
-    pub command: String,
+    pub menu_command: Vec<String>,
+    pub default_project_command: Vec<String>,
 }
 
 impl Config {
@@ -19,11 +20,19 @@ impl Default for Config {
     fn default() -> Self {
         let mut projects_configs_path = PathBuf::from(env::var("HOME").unwrap_or_default());
         projects_configs_path.push("Projects");
-        projects_configs_path.push(".launch");
+        projects_configs_path.push(".projects");
         Self {
-            version: "0.1.0".to_owned(),
-            command: "dmenu".to_owned(),
             projects_configs_path,
+            version: "0.1.0".to_owned(),
+            menu_command: vec!["rofi".to_owned(), "-dmenu".to_owned()],
+            default_project_command: vec![
+                "zellij".to_owned(),
+                "-l".to_owned(),
+                "$layout".to_owned(),
+                "attach".to_owned(),
+                "--create".to_owned(),
+                "$name".to_owned(),
+            ],
         }
     }
 }
