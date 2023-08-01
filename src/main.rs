@@ -18,7 +18,7 @@ mod project;
 fn main() {
     // Path to your project configuration files
     let opts: Opts = Opts::parse();
-    let conf = config::Config::get();
+    let conf = config::Config::load();
     pretty_env_logger::formatted_builder()
         .filter_level(opts.verbose.log_level_filter())
         .init();
