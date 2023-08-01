@@ -3,7 +3,7 @@ name = "project"
 version = "0.1.0"
 edition = "2021"
 description = "Highly customisable project laucher"
-licence = "M.I.T"
+license = "M.I.T"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
