@@ -1,36 +1,39 @@
-# Project launcher(in rust)
+# Project launcher
+Do you need to launch multiple things whenever you want to work on a new project ?
+Can you remember everythings needed to get running on that project from three month ago ?
 
-Try to rewrite my project launcher wich is a rofi script in rust
+`project` aim to make starting working on your project a simple click.
 
-```bash
-#!/bin/bash
+The default configuration uses `fzf` as a project selector
+And zellij as the project startup script
 
-# Path to your project configuration files
-PROJECTS_DIR="$HOME/Projects/.launch"
+```yml
+version: 0.1.0
+projects_configs_path: /home/ruchdane/Projects/.projects
+menu_command: [fzf]
+default_project_command: [zellij, -l, $layout, attach, --create, $name]
+```
+`Config file located at ~/.config/project/config.yaml`
 
-# Get list of project configuration files
-PROJECTS_CONFIGS=$(ls $PROJECTS_DIR/*.yml)
+Any value specified in the env section of a project config can be referenced here by prefixing it with the `$` sign
+```yml
+name: Project Laucher
+description: Bridge between dmenu and tmux
+path: /home/ruchdane/Projects/project
+tags: [rust,cli]
+env: 
+  layout: rust
+  name: project
+```
+`Example Project config`
+The command can be ovverided on a per project basis 
 
-# Loop through the tmuxp configuration files and read their descriptions
-for CONFIG in $PROJECTS_CONFIGS; do
-    NAME=$(grep -i '^Name:' ${CONFIG}.desc | cut -d ' ' -f 2-)
-    DESCRIPTION=$(grep -i '^Description:' ${CONFIG}.desc | cut -d ' ' -f 2-)
-    TAGS=$(grep -i '^Tags:' ${CONFIG}.desc | cut -d ' ' -f 2-)
-    if [ -z "$MENU_ITEMS" ]; then
-        MENU_ITEMS="$NAME | $DESCRIPTION | $TAGS | $CONFIG"
-    else
-        MENU_ITEMS="$MENU_ITEMS\n$NAME | $DESCRIPTION | $TAGS | $CONFIG"
-    fi
-done
-
-# Rofi theme location
-ROFITHEME="$HOME/.config/rofi/themes/dracula.rasi"
-# Prompt user to select a configuration file using dmenu
-SELECTED=$(echo -e "$MENU_ITEMS" | rofi -theme $ROFITHEME -dmenu  -i -l 10 -p "Select a tmuxp configuration:" | rev | cut -d '|' -f 1 | rev)
-
-# Launch the selected configuration file with tmuxp
-if [ ! -z "$SELECTED" ]; then
-    # Launch the selected project
-    tmuxp load $SELECTED
-fi
+```yml
+name: Project Laucher
+description: Bridge between dmenu and tmux
+path: /home/ruchdane/Projects/project
+tags: [rust,cli]
+command [code; $path]
+env:
+  path: /home/ruchdane/Projects/project
 ```
