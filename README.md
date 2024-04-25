@@ -1,21 +1,27 @@
 # Project launcher
-Do you need to launch multiple things whenever you want to work on a new project ?
-Can you remember everythings needed to get running on that project from three month ago ?
+Do you need to launch multiple command whenever you want to work on a project ?
 
 `project` aim to make starting working on your project a simple click.
 
-The default configuration uses `fzf` as a project selector
-And zellij as the project startup script
+## Config
+Global config is located at ~/.config/project/config.yaml
 
 ```yml
 version: 0.1.0
 projects_configs_path: /home/ruchdane/Projects/.projects
 menu_command: [fzf]
 default_project_command: [zellij, -l, $layout, attach, --create, $name]
-```
-`Config file located at ~/.config/project/config.yaml`
+``` 
+
+The default configuration uses `fzf` as a project selector
+
+And `zellij` as the project startup script
+
+It looks for projects config in `~/Projects/.projects`
+
 
 Any value specified in the env section of a project config can be referenced here by prefixing it with the `$` sign
+
 ```yml
 name: Project Laucher
 description: Bridge between dmenu and tmux
@@ -25,15 +31,18 @@ env:
   layout: rust
   name: project
 ```
-`Example Project config`
-The command can be ovverided on a per project basis 
+
+startup command can be overridden in a project
 
 ```yml
 name: Project Laucher
 description: Bridge between dmenu and tmux
-path: /home/ruchdane/Projects/project
-tags: [rust,cli]
-command [code; $path]
-env:
-  path: /home/ruchdane/Projects/project
+path: ~/Projects/project
+tags: [rust, cli]
+command: [code, $path]
 ```
+
+## Exemple
+### fzf + zellij
+### dmenu + tmux
+### rofi + code
