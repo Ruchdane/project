@@ -1,9 +1,15 @@
 [package]
 name = "project_launcher"
 version = "0.1.0"
-edition = "2021"
-description = "Highly customisable project laucher"
+authors = ["Ruchdane <ruchdaneabiodun@gmail.com>"]
 license = "MIT"
+description = "Highly customisable project laucher"
+readme = "README.md"
+homepage = "https://github.com/Ruchdane/project"
+repository = "https://github.com/Ruchdane/project"
+keywords = ["cli", "launcher"]
+categories = ["command-line-utilities"]
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
